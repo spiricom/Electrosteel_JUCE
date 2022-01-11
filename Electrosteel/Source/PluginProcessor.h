@@ -12,22 +12,22 @@
 
 #include <JuceHeader.h>
 #include "Constants.h"
-#include "Utilities.h"
-#include "Oscillators.h"
-#include "Filters.h"
-#include "Envelopes.h"
-#include "Output.h"
+#include "Electro_backend/Utilities.h"
+#include "Electro_backend/Oscillators.h"
+#include "Electro_backend/Filters.h"
+#include "Electro_backend/Envelopes.h"
+#include "Electro_backend/Output.h"
 
 class StandalonePluginHolder;
 
 //==============================================================================
-class ESAudioProcessor : public AudioProcessor,
+class ElectroAudioProcessor : public AudioProcessor,
                          public MidiKeyboardStateListener
 {
 public:
     //==============================================================================
-    ESAudioProcessor();
-    ~ESAudioProcessor() override;
+    ElectroAudioProcessor();
+    ~ElectroAudioProcessor() override;
     
     //==============================================================================
     AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
@@ -136,9 +136,9 @@ public:
     int midiKeyMin = 21; // Default to A0
     int midiKeyMax = 108; // Default to C8
 
-	float* velocityValues[MAX_NUM_UNIQUE_SKEWS];
-	float lastVelocityValue = 0.f;
-	std::unique_ptr<MappingSourceModel> velocitySource;
+    float* velocityValues[MAX_NUM_UNIQUE_SKEWS];
+    float lastVelocityValue = 0.f;
+    std::unique_ptr<MappingSourceModel> velocitySource;
     
     float* randomValues[MAX_NUM_UNIQUE_SKEWS];
     float lastRandomValue = 0.f;
@@ -213,5 +213,5 @@ private:
     int stringActivityTimeout;
     
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ESAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ElectroAudioProcessor)
 };
