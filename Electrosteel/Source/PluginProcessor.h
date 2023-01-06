@@ -17,6 +17,10 @@
 #include "Electro_backend/Filters.h"
 #include "Electro_backend/Envelopes.h"
 #include "Electro_backend/Output.h"
+#include "Electro_backend/TuningControl.hpp"
+#include "Electro_backend/Effect.h"
+#include "RingBuffer.h"
+
 
 class StandalonePluginHolder;
 
@@ -88,10 +92,12 @@ public:
     //==============================================================================
     void sendCopedentMidiMessage();
     void sendPresetMidiMessage();
-    
+    void sendTuningMidiMessage();
     //==============================================================================
     void addMappingSource(MappingSourceModel* source);
     void addMappingTarget(MappingTargetModel* source);
+    
+    void tickKnobsToSmooth();
     
     MappingSourceModel* getMappingSource(const String& name);
     MappingTargetModel* getMappingTarget(const String& name);
@@ -102,10 +108,11 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
+    
+    void addToKnobsToSmoothArray(SmoothedParameter* param);
     //==============================================================================
     float editorScale = 1.05f;
-    
+    String wavTableFolder;
     MidiKeyboardState keyboardState;
     
     juce::AudioFormatManager formatManager;
@@ -115,18 +122,21 @@ public:
     HashMap<String, Array<tWaveTableS>> waveTables;
 
     LEAF leaf;
-    float voiceNote[NUM_STRINGS];
-    float voicePrevBend[NUM_STRINGS];
+    float voiceNote[MAX_NUM_VOICES];
+    float voicePrevBend[MAX_NUM_VOICES];
     int highByteVolume;
+    Array<SmoothedParameter*> knobsToSmooth;
     OwnedArray<Oscillator> oscs;
     std::unique_ptr<NoiseGenerator> noise;
     OwnedArray<Filter> filt;
     OwnedArray<Envelope> envs;
     OwnedArray<LowFreqOscillator> lfos;
     std::unique_ptr<Output> output;
-    
+    OwnedArray<Effect> fx;
     std::unique_ptr<SmoothedParameter> transposeParam;
     OwnedArray<SmoothedParameter> pitchBendParams;
+    std::unique_ptr<SmoothedParameter> _pitchBendRange;
+    
     OwnedArray<SmoothedParameter> ccParams;
     OwnedArray<MappingSourceModel> ccSources;
     std::unique_ptr<SmoothedParameter> seriesParallelParam;
@@ -136,9 +146,9 @@ public:
     int midiKeyMin = 21; // Default to A0
     int midiKeyMax = 108; // Default to C8
 
-    float* velocityValues[MAX_NUM_UNIQUE_SKEWS];
-    float lastVelocityValue = 0.f;
-    std::unique_ptr<MappingSourceModel> velocitySource;
+	float* velocityValues[MAX_NUM_UNIQUE_SKEWS];
+	float lastVelocityValue = 0.f;
+	std::unique_ptr<MappingSourceModel> velocitySource;
     
     float* randomValues[MAX_NUM_UNIQUE_SKEWS];
     float lastRandomValue = 0.f;
@@ -166,9 +176,9 @@ public:
     String copedentName = "";
     int copedentNumber = 0;
     
-    bool voiceIsSounding[NUM_STRINGS];
+    bool voiceIsSounding[MAX_NUM_VOICES];
     
-    int numVoicesActive = 12;
+    int numVoicesActive = 1;
     
     // Must be at least as large of the number of unique skews
     Array<float> invParameterSkews;
@@ -177,41 +187,112 @@ public:
     
     HashMap<String, int> sourceMappingCounts;
     
-    tSimplePoly strings[NUM_STRINGS];
+    tSimplePoly strings[MAX_NUM_VOICES];
     
-    bool pedalControlsMaster = true;
+    bool pedalControlsMaster = false;
     
     // +1 because we'll treat pedal as 2 macros for ccs
     int macroCCNumbers[NUM_MACROS+1];
     HashMap<int, int> ccNumberToMacroMap;
     
     // +1 because 0 no string/global pitch bend
-    int stringChannels[NUM_STRINGS+1];
+    int stringChannels[MAX_NUM_VOICES+1];
     HashMap<int, int> channelToStringMap;
     
+    float centsDeviation[NUM_MIDI_NOTES];
+
     StringArray macroNames;
+    TuningControl tuner;
+    FileChooser* chooser;
+    String wavFolder = "";
+    PropertySet settings;
+
+    File getLastFile() const
+    {
+        File f;
+        f = File (settings.getValue ("lastStateFile"));
+        
+        if (f == File())
+            f = File::getSpecialLocation (File::userDocumentsDirectory);
+        
+        return f;
+    }
     
+    void setLastFile (const FileChooser& fc)
+    {
+        settings.setValue ("lastStateFile", fc.getResult().getFullPathName());
+    }
+    
+    void setPeakLevel(int channelIndex, float peakLevel);
+    float getPeakLevel(int channelIndex);
+    
+    std::unique_ptr<NormalisableRange<float>> pitchBendRange;
+    float convertFrom0to1Func(float value0To1)
+    {
+        if (_pitchBendRange)
+        {
+            
+            float range  = (_pitchBendRange->getRawValue() + _pitchBendRange->getRawValue());
+            float a = (range)*(value0To1);
+            float val = (( a / 1)) - _pitchBendRange->getRawValue();
+            return val;
+        }
+        else return 0;
+    }
+    float convertTo0To1Func(float worldValue)
+    {
+        if (_pitchBendRange )
+        {
+            float a = worldValue + _pitchBendRange->getRawValue();
+            float val = a / (_pitchBendRange->getRawValue() + _pitchBendRange->getRawValue());
+            return val;
+        }
+        else return 0;
+    }
+    AudioBufferQueue<float>& getAudioBufferQueue() noexcept { return audioBufferQueue; }
+    
+    void setPresetName(String name)
+    {
+        presetName = name;
+    }
+    
+    void setPresetNumber(int number)
+    {
+        presetNumber = number;
+    }
+    
+    std::unique_ptr<SmoothedParameter> master;
+    float oscAmpMult;
+    float oscAmpMultArr[4] = {0,1, 0.5, .3333f};
 private:
-    
+    std::atomic<float>* fxPost;
+    std::mutex m;
+    MTSClient *client;
     StringArray paramIds;
     StringArray sourceIds;
-
     AudioProcessorValueTreeState vts;
     
     char dummy_memory[1];
     
-    float centsDeviation[NUM_STRINGS];
     int currentTuning;
     int keyCenter = 0;
     
     bool waitingToSendCopedent = false;
     bool waitingToSendPreset = false;
+    bool waitingToSendTuning = false;
+    bool mpeMode = false;
     
-    bool mpeMode = true;
-    
-    int stringActivity[NUM_STRINGS+1];
+    int stringActivity[MAX_NUM_VOICES+1];
     int stringActivityTimeout;
     
+    String presetName;
+    int presetNumber;
+    tOversampler os[MAX_NUM_VOICES];
+    float oversamplerArray[OVERSAMPLE];
+    AlertWindow prompt;
+    std::array<std::atomic<float>, 128> m_peakLevels;
+    AudioBufferQueue<float> audioBufferQueue;
+    ScopeDataCollector<float> scopeDataCollector{ audioBufferQueue };
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ElectroAudioProcessor)
 };

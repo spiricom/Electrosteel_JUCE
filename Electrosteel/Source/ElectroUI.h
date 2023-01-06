@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin editor.
+    ElectroUI.h
+    Created: 13 Jul 2022 1:55:06pm
+    Author:  Davis Polito
 
   ==============================================================================
 */
@@ -16,45 +16,38 @@
 #include "Electro_backend/ElectroComponents.h"
 #include "Constants.h"
 
-
-//==============================================================================
-/**
-*/
-
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
-class ElectroAudioProcessorEditor : public AudioProcessorEditor,
+class ElectroUI : public TabbedComponent,
                                public Slider::Listener,
                                public Button::Listener,
                                public Label::Listener,
-                               public KeyListener,
                                public Timer,
-                               public DragAndDropContainer,
-                               public sd::SoundMeter::MetersComponent::FadersChangeListener
-
+                               public DragAndDropContainer
+                               
 {
 public:
-    ElectroAudioProcessorEditor (ElectroAudioProcessor&, AudioProcessorValueTreeState& vts);
-	~ElectroAudioProcessorEditor();
-	
+    ElectroUI (ElectroAudioProcessor&, AudioProcessorValueTreeState& vts);
+    ~ElectroUI() override;
+    
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-	void sliderValueChanged(Slider* slider) override;
-	void buttonClicked(juce::Button* button) override;
+    void sliderValueChanged(Slider* slider) override;
+    void buttonClicked(juce::Button* button) override;
     void labelTextChanged(Label* label) override;
     
     void mouseDown (const MouseEvent &event) override;
-    bool keyPressed (const KeyPress &key, Component *originatingComponent) override;
+    //bool keyPressed (const KeyPress &key, Component *originatingComponent) override;
     void timerCallback() override;
     //void currentTabChanged(int tabIndex, const String &newCurrentTabName) override;
     void update();
     
     ElectroAudioProcessor& processor;
     AudioProcessorValueTreeState& vts;
-    
+   
     
 private:
     
@@ -67,32 +60,9 @@ private:
     void updateNumVoicesSlider(int numVoices);
     void updateVelocityLabel(float velocity);
     void updateRandomValueLabel(float value);
-    static void setVerticalRotatedWithBounds (Component& component, bool clockWiseRotation, Rectangle<int> verticalBounds)
-    {
-        auto angle = MathConstants<float>::pi / 2.0f;
-
-        if (! clockWiseRotation)
-            angle *= -1.0f;
-
-        component.setTransform ({});
-        component.setSize (verticalBounds.getHeight(), verticalBounds.getWidth());
-        component.setCentrePosition (0, 0);
-        component.setTransform (AffineTransform::rotation (angle).translated (verticalBounds.getCentreX(), verticalBounds.getCentreY()));
-    }
-    
-    void fadersChanged (std::vector<float> faderValues) override;
-    sd::SoundMeter::MetersComponent meters;
-    
-    TextEditor presetNameEditor;
-    Slider presetNumber;
-    Label presetNamelabel;
-    Label presetNumberlabel;
+    ElectroLookAndFeel laf;
     WaveformComponent<float> OSCILLOSCOPE;
-    
-    TabbedComponent tabs;
-    
     Component tab1;
-    
     ElectroComponent midiKeyComponent;
     std::unique_ptr<MappingSource> midiKeySource;
     Slider midiKeyRangeSlider;
@@ -135,10 +105,8 @@ private:
     TuningTab tuningTab;
     Component tab2;
     Component tab4;
-    Component tab5;
-    CopedentTable copedentTable;
-    
     FXTab fxTab;
+    
     /* ToggleButton mpeToggle */// Declared above but will be include in this tab too
     OwnedArray<Label> macroControlEntries;
     OwnedArray<Label> macroControlNames;
@@ -147,22 +115,15 @@ private:
     OwnedArray<Label> stringChannelEntries;
     OwnedArray<Label> stringChannelLabels;
     
-    TextButton sendOutButton;
-    Label versionLabel;
-    std::unique_ptr<Drawable> logo;
-    Label synderphonicsLabel;
-    Label ElectrosteelLabel;
     
     OwnedArray<SliderAttachment> sliderAttachments;
     OwnedArray<ButtonAttachment> buttonAttachments;
 
-    std::unique_ptr<ComponentBoundsConstrainer> constrain;
-    std::unique_ptr<ResizableCornerComponent> resizer;
-    juce::TooltipWindow tooltipWindow;
     
-    Font euphemia;
+    
+    
     FileChooser chooser;
-    ElectroLookAndFeel laf;
+    
     OwnedArray<MappingSource> allSources;
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ElectroAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ElectroUI);
 };

@@ -12,22 +12,25 @@
 
 #include <JuceHeader.h>
 #include <float.h>
-
-#define NUM_GENERIC_MACROS 16
+#define EDITOR_WIDTH 900.0f
+#define EDITOR_HEIGHT 700.0f
+#define NUM_GENERIC_MACROS 8
+#define NUM_MIDI_NOTES 128
 #define NUM_UNIQUE_MACROS 5
 #define NUM_MACROS (NUM_GENERIC_MACROS + NUM_UNIQUE_MACROS)
 #define PEDAL_MACRO_ID (NUM_MACROS-1)
 
 #define NUM_STRINGS 12
-
-#define NUM_CHANNELS (NUM_STRINGS+1)
+#define MAX_NUM_VOICES 12
+#define NUM_CHANNELS (MAX_NUM_VOICES+1)
 
 #define NUM_OSCS 3
 #define INV_NUM_OSCS 0.333333f
 #define NUM_FILT 2
 #define NUM_ENVS 4
 #define NUM_LFOS 4
-
+#define NUM_FX 4
+#define OVERSAMPLE 2
 #define EXP_BUFFER_SIZE 2048
 #define DECAY_EXP_BUFFER_SIZE 2048
 
@@ -35,7 +38,8 @@
 
 #define INV_127 0.007874015748031f
 #define INV_4095 0.0002442002442f
-#define INV_16383 0.000061038881768f;
+#define INV_16383 0.000061038881768f
+#define PI_DIV_2 1.570796326794897f
 
 const float volumeAmps128[128] =
 {
@@ -74,6 +78,7 @@ typedef enum _OscParam
     OscFreq,
     OscShape,
     OscAmp,
+    OscHarm,
     OscParamNil
 } OscParam;
 static const StringArray cOscParams = {
@@ -81,14 +86,16 @@ static const StringArray cOscParams = {
     "Fine",
     "Freq",
     "Shape",
-    "Amp"
+    "Amp",
+    "Harmonics"
 };
 static const std::vector<std::vector<float>> vOscInit = {
     { -24.0f, 24.0f, 0.0f, 0.0f }, //Pitch
     { -100.f, 100.f, 0.0f, 0.0f }, //Fine
     { -2000.f, 2000.f, 0.0f, 0.0f }, //Freq
     { 0.0f, 1.0f, 0.0f, 0.5f },  //Shape
-    { 0.0f, 2.0f, 1.0f, 1.0f },  //Amp
+    { 0.0f, 1.0f, 1.0f, 0.5f },  //Amp
+    { -16, 16, 0.0f, 0.0f} //harmonics
 };
 
 typedef enum _OscShapeSet
@@ -118,16 +125,16 @@ typedef enum _LowFreqParam
 {
     LowFreqRate = 0,
     LowFreqShape,
-    LowFreqSyncPhase,
+    LowFreqPhase,
     LowFreqParamNil
 } LowFreqParam;
 static const StringArray cLowFreqParams = {
     "Rate",
     "Shape",
-    "Sync Phase"
+    "Phase"
 };
 static const std::vector<std::vector<float>> vLowFreqInit = {
-    { 0.0f, 30.f, 1.0f, 2.f },  //Rate
+    { 0.0f, 30.f, 0.5f, 2.f },  //Rate
     { 0.0f, 1.0f, 0.0f, 0.5f },  //Shape
     { 0.0f, 1.0f, 0.0f, 0.5f } // Phase Offset
 };
@@ -155,15 +162,21 @@ static const StringArray lfoShapeSetNames = {
 
 typedef enum _NoiseParam
 {
-    NoiseColor = 0,
-    NoiseAmp
+    NoiseTilt= 0,
+    NoiseGain,
+    NoiseFreq,
+    NoiseAmp,
 } NoiseParam;
 static const StringArray cNoiseParams = {
-    "Color",
+    "Tilt",
+    "PeakGain",
+    "PeakFreq",
     "Amp"
 };
 static const std::vector<std::vector<float>> vNoiseInit = {
-    { 0.0f, 1.f, 0.5f, 0.5f },   //Color
+    { 0.0f, 1.f, 0.5f, 0.5f },   //tilt
+    { 0.0f, 1.f, 0.5f, 0.5f },  //Gain
+    { 0.0f, 1.f, 0.5f, 0.5f },   //Freq
     { 0.0f, 2.0f, 0.f, 1.f }   //Amp
 };
 
@@ -172,19 +185,23 @@ static const std::vector<std::vector<float>> vNoiseInit = {
 typedef enum _FilterParam
 {
     FilterCutoff = 0,
+    FilterGain,
     FilterResonance,
     FilterKeyFollow,
     FilterParamNil
 } FilterParam;
 static const StringArray cFilterParams = {
     "Cutoff",
+    "Gain",
     "Resonance",
     "KeyFollow"
 };
 static const std::vector<std::vector<float>> vFilterInit = {
     { 0.0f, 127.f, 72.f, 63.5f },   //Cutoff
-    { 0.1f, 10.0f, 0.5f, 0.7f },   //Resonance
-    { 0.0f, 1.f, 0.5f, 0.5f }   //KeyFollow
+    { 0.0f, 1.f, 0.5f, 0.5f }, //Gain
+    { 0.01f, 10.f, 0.5f, 0.5f },   //Resonance
+    { 0.0f, 1.f, 0.5f, 0.5f }  //KeyFollow
+    
 };
 
 typedef enum _FilterType
@@ -192,12 +209,25 @@ typedef enum _FilterType
     LowpassFilter = 0,
     HighpassFilter,
     BandpassFilter,
+    DiodeLowpassFilter,
+    VZPeakFilter,
+    VZLowshelfFilter,
+    VZHighshelfFilter,
+    VZBandrejectFilter,
+    LadderLowpassFilter,
     FilterTypeNil
 } FilterType;
+
 static const StringArray filterTypeNames = {
     "Lowpass",
     "Highpass",
-    "Bandpass"
+    "Bandpass",
+    "DiodeLowpass",
+    "Peak",
+    "Lowshelf",
+    "Highshelf",
+    "Notch",
+    "LadderLowpass"
 };
 
 //==============================================================================
@@ -221,7 +251,7 @@ static const StringArray cEnvelopeParams = {
 static const std::vector<std::vector<float>> vEnvelopeInit = {
     { 0.0f, 20000.0f, 7.f, 4000.f },   //Attack
     { 0.0f, 20000.0f, 1000.f, 4000.f },  //Decay
-    { 0.0f, 1.f, 0.8f, 0.5f },   //Sustain
+    { 0.0f, 1.f, 0.5f, 0.5f },   //Sustain
     { 0.0f, 20000.0f, 20.f, 4000.f },   //Release
     { 0.0f, 1.0f, 0.f, 0.5f },   //Leak
 };
@@ -231,17 +261,18 @@ static const std::vector<std::vector<float>> vEnvelopeInit = {
 typedef enum _OutputParam
 {
     OutputAmp,
-    OutputPan,
+    OutputTone,
     OutputParamNil
 } OutputParam;
 static const StringArray cOutputParams = {
     "Amp",
-    "Pan"
+    "Tone"
 };
 static const std::vector<std::vector<float>> vOutputInit = {
-    { 0.0f, 2.0f, 0.0f, 1.0f },   //Amp
-    { -1.0f, 1.0f, 0.f, 0.f},  //Pan
+    { 0.0f, 1.0f, 0.0f, 0.5f },   //Amp
+    { 0.0f, 1.0, 1.0f, 0.5f },   //Tone
 };
+
 
 //==============================================================================
 
@@ -291,3 +322,131 @@ static const std::vector<std::vector<float>> cCopedentArrayInit = {
     { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
     { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
 };
+
+
+
+typedef enum _FXParam
+{
+    Param1 = 0,
+    Param2,
+    Param3,
+    Param4,
+    Param5,
+    Mix,
+    PostGain,
+    ParamNil
+} FXParam;
+static const StringArray cFXParams = {
+    "Param1",
+    "Param2",
+    "Param3",
+    "Param4",
+    "Param5",
+    "Mix",
+    "PostGain"
+};
+static const std::vector<std::vector<float>> vFXInit = {
+    { 0.0f, 1.0f, 0.0f, 0.5f },   //
+    { 0.0f, 1.0f, 0.0f, 0.5f },   //
+    { 0.0f, 1.0f, 0.0f, 0.5f },   //
+    { 0.0f, 1.0f, 0.0f, 0.5f },   //
+    { 0.0f, 1.0f, 0.0f, 0.5f },   //
+    { 0.0f, 1.0f, 1.0f, 0.5f },   // mix
+    { 0.0f, 1.0f, 0.5f, 0.5f }   // postgain
+};
+
+typedef enum _FXType
+{
+    None = 0,
+    Softclip,
+    Hardclip,
+    ABSaturator,
+    Tanh,
+    Shaper,
+    Compressor,
+    Chorus,
+    Bitcrush,
+    TiltFilter,
+    Wavefolder,
+    LpFilter,
+    HpFilter,
+    BpFilter,
+    DLFilter,
+    VZPFilter,
+    VZLFilter,
+    VZHFilter,
+    VZBFilter,
+    LLFilter,
+    FXTypeNil
+} FXType;
+
+static const StringArray FXTypeNames = {
+    "None",
+    "Softclip",
+    "Hardclip",
+    "ABSaturator",
+    "Tanh",
+    "Shaper",
+    "Compressor",
+    "Chorus",
+    "Bitcrush",
+    "TiltFilter",
+    "Wavefolder",
+    "Lowpass",
+    "Highpass",
+    "Bandpass",
+    "DiodeLowpass",
+    "Peak",
+    "Lowshelf",
+    "Highshelf",
+    "Notch",
+    "LadderLowpass"
+};
+
+static const std::vector<StringArray> FXParamNames = {
+    {"","","","","" },
+    {"Drive","Offset","Shape","","" },
+    {"Drive","Offset","Shape","","" },
+    {"Drive","Offset","","",""},
+    {"Drive","Offset","","",""},
+    {"Gain","Offset","Drive","",""},
+    {"Threshold","Ratio","Makeup","Attack","Release"},
+    {"Delay","Depth","Speed1","Speed2",""},
+    {"Gain","Crush","Decimate","Round","Operation"},
+    {"Tilt","PeakFreq","PeakQ","PeakGain",""},
+    {"Drive","Offset","FB","FF","Depth"},
+    {"Cutoff", "", "Resonance" ,"",""},
+    {"Cutoff", "", "Resonance" ,"",""},
+    {"Cutoff", "", "Resonance" ,"",""},
+    {"Cutoff", "", "Resonance" ,"",""},
+    {"Cutoff", "Gain", "Resonance" ,"",""},
+    {"Cutoff", "Gain", "Resonance" ,"",""},
+    {"Cutoff", "Gain", "Resonance" ,"",""},
+    {"Cutoff", "", "Resonance" ,"",""},
+    {"Cutoff", "", "Resonance" ,"",""}
+};
+
+static const std::vector<std::vector<float>> FXParamDefaults = {
+    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+    {0.2f, 0.5f, 1.0f, 1.0f, 0.0f},
+    {0.2f, 0.5f, 1.0f, 1.0f, 0.0f},
+    {0.2f, 0.5f, 1.0f, 1.0f, 0.0f},
+    {0.3f, 0.5f, 1.0f, 1.0f, 0.0f},
+    {0.2f, 0.5f, 1.0f, 1.0f, 0.0f},
+    {0.5f, 0.4f, 0.4f, 0.05f, 0.25f},
+    {0.65f, 0.65f, 0.1f, 0.25f, 0.0f},
+    {0.5f, 0.5f, 0.2f, 0.8f, 0.25f},
+    {0.5f, 0.5f, 0.5f, 0.5f, 0.0f},
+    {0.4f, 0.5f, 0.6f, 0.4f, 0.5f},
+    {0.75f, 0.5f, 0.5f, 0.0f, 0.0f},
+    {0.35f, 0.5f, 0.5f, 0.0f, 0.0f},
+    {0.5f, 0.5f, 0.5f, 0.0f, 0.0f},
+    {0.65f, 0.5f, 0.5f, 0.0f, 0.0f},
+    {0.5f, 0.75f, 0.5f, 0.0f, 0.0f},
+    {0.45f, 0.65f, 0.4f, 0.0f, 0.0f},
+    {0.5f, 0.65f, 0.5f, 0.0f, 0.0f},
+    {0.5f, 0.5f, 0.5f, 0.0f, 0.0f},
+    {0.6f, 0.5f, 0.55f, 0.0f, 0.0f}
+};
+
+//==============================================================================

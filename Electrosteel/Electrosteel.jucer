@@ -4,37 +4,52 @@
               jucerFormatVersion="1" version="0.5.0" companyName="Snyderphonics"
               companyCopyright="Snyderphonics" companyWebsite="http://snyderphonics.com/"
               pluginCharacteristicsValue="pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1&#10;" pluginVST3Category="Instrument">
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1&#10;BOOST_ALL_NO_LIB=1&#10;"
+              pluginVST3Category="Instrument">
   <MAINGROUP id="zr98AB" name="Electrosteel">
     <GROUP id="{B8EA8B88-4125-0A91-2EA2-1CD3B3374012}" name="Source">
+      <FILE id="rkeubL" name="RingBuffer.h" compile="0" resource="0" file="Source/RingBuffer.h"/>
       <GROUP id="{D0B7E845-9BE2-75A7-1934-4DD44C496485}" name="Electro_backend">
-        <FILE id="LHiABT" name="ElectroComponents.cpp" compile="1" resource="0"
+        <FILE id="cQhSnf" name="Effect.cpp" compile="1" resource="0" file="Source/Electro_backend/Effect.cpp"/>
+        <FILE id="CVc1bO" name="Effect.h" compile="0" resource="0" file="Source/Electro_backend/Effect.h"/>
+        <FILE id="LCBvUN" name="FXTab.cpp" compile="1" resource="0" file="Source/Electro_backend/FXTab.cpp"/>
+        <FILE id="jQvQGy" name="FXTab.h" compile="0" resource="0" file="Source/Electro_backend/FXTab.h"/>
+        <FILE id="zVZ6rM" name="libMTSClient.h" compile="0" resource="0" file="Source/Electro_backend/MTS-ESP/Client/libMTSClient.h"/>
+        <FILE id="oaWeiY" name="libMTSClient.cpp" compile="1" resource="0"
+              file="Source/Electro_backend/MTS-ESP/Client/libMTSClient.cpp"/>
+        <FILE id="ap1W7E" name="TuningsImpl.h" compile="0" resource="0" file="Source/Electro_backend/tuning-library/include/TuningsImpl.h"/>
+        <FILE id="OpMwxU" name="Tunings.h" compile="0" resource="0" file="Source/Electro_backend/tuning-library/include/Tunings.h"/>
+        <FILE id="DQMYmB" name="TuningControl.hpp" compile="0" resource="0"
+              file="Source/Electro_backend/TuningControl.hpp"/>
+        <FILE id="ksLUbf" name="TuningControl.cpp" compile="1" resource="0"
+              file="Source/Electro_backend/TuningControl.cpp"/>
+        <FILE id="PZzPfg" name="ElectroComponents.cpp" compile="1" resource="0"
               file="Source/Electro_backend/ElectroComponents.cpp"/>
-        <FILE id="TOu8R7" name="ElectroComponents.h" compile="0" resource="0"
+        <FILE id="Fmzir1" name="ElectroComponents.h" compile="0" resource="0"
               file="Source/Electro_backend/ElectroComponents.h"/>
-        <FILE id="npDDOI" name="ElectroLookAndFeel.cpp" compile="1" resource="0"
+        <FILE id="D2h1jf" name="ElectroLookAndFeel.cpp" compile="1" resource="0"
               file="Source/Electro_backend/ElectroLookAndFeel.cpp"/>
-        <FILE id="qOZTGI" name="ElectroLookAndFeel.h" compile="0" resource="0"
+        <FILE id="fK56NF" name="ElectroLookAndFeel.h" compile="0" resource="0"
               file="Source/Electro_backend/ElectroLookAndFeel.h"/>
-        <FILE id="RIbpOK" name="ElectroModules.cpp" compile="1" resource="0"
+        <FILE id="RCoYqH" name="ElectroModules.cpp" compile="1" resource="0"
               file="Source/Electro_backend/ElectroModules.cpp"/>
-        <FILE id="dwLeht" name="ElectroModules.h" compile="0" resource="0"
+        <FILE id="siXH1v" name="ElectroModules.h" compile="0" resource="0"
               file="Source/Electro_backend/ElectroModules.h"/>
-        <FILE id="Vd0uDB" name="ElectroStandalone.cpp" compile="1" resource="0"
+        <FILE id="PSunoE" name="ElectroStandalone.cpp" compile="1" resource="0"
               file="Source/Electro_backend/ElectroStandalone.cpp"/>
-        <FILE id="UX60as" name="ElectroStandalone.h" compile="0" resource="0"
+        <FILE id="SsJOrs" name="ElectroStandalone.h" compile="0" resource="0"
               file="Source/Electro_backend/ElectroStandalone.h"/>
-        <FILE id="Kr2N09" name="Envelopes.cpp" compile="1" resource="0" file="Source/Electro_backend/Envelopes.cpp"/>
-        <FILE id="f2HbCF" name="Envelopes.h" compile="0" resource="0" file="Source/Electro_backend/Envelopes.h"/>
-        <FILE id="vXDHez" name="Filters.cpp" compile="1" resource="0" file="Source/Electro_backend/Filters.cpp"/>
-        <FILE id="GJKPW1" name="Filters.h" compile="0" resource="0" file="Source/Electro_backend/Filters.h"/>
-        <FILE id="tOLmh2" name="Oscillators.cpp" compile="1" resource="0" file="Source/Electro_backend/Oscillators.cpp"/>
-        <FILE id="eZ6FW9" name="Oscillators.h" compile="0" resource="0" file="Source/Electro_backend/Oscillators.h"/>
-        <FILE id="j6ORzD" name="Output.cpp" compile="1" resource="0" file="Source/Electro_backend/Output.cpp"/>
-        <FILE id="Sa84Z2" name="Output.h" compile="0" resource="0" file="Source/Electro_backend/Output.h"/>
-        <FILE id="OPCGeT" name="README.md" compile="0" resource="1" file="Source/Electro_backend/README.md"/>
-        <FILE id="b0Ccbr" name="Utilities.cpp" compile="1" resource="0" file="Source/Electro_backend/Utilities.cpp"/>
-        <FILE id="SOTM9o" name="Utilities.h" compile="0" resource="0" file="Source/Electro_backend/Utilities.h"/>
+        <FILE id="mEENJt" name="Envelopes.cpp" compile="1" resource="0" file="Source/Electro_backend/Envelopes.cpp"/>
+        <FILE id="uXnOkR" name="Envelopes.h" compile="0" resource="0" file="Source/Electro_backend/Envelopes.h"/>
+        <FILE id="gUrm3s" name="Filters.cpp" compile="1" resource="0" file="Source/Electro_backend/Filters.cpp"/>
+        <FILE id="MW2fwv" name="Filters.h" compile="0" resource="0" file="Source/Electro_backend/Filters.h"/>
+        <FILE id="fQ0QEp" name="Oscillators.cpp" compile="1" resource="0" file="Source/Electro_backend/Oscillators.cpp"/>
+        <FILE id="fxRbSK" name="Oscillators.h" compile="0" resource="0" file="Source/Electro_backend/Oscillators.h"/>
+        <FILE id="y1G5vA" name="Output.cpp" compile="1" resource="0" file="Source/Electro_backend/Output.cpp"/>
+        <FILE id="mVF033" name="Output.h" compile="0" resource="0" file="Source/Electro_backend/Output.h"/>
+        <FILE id="jWP06E" name="README.md" compile="0" resource="1" file="Source/Electro_backend/README.md"/>
+        <FILE id="vuBTRF" name="Utilities.cpp" compile="1" resource="0" file="Source/Electro_backend/Utilities.cpp"/>
+        <FILE id="dW7JpL" name="Utilities.h" compile="0" resource="0" file="Source/Electro_backend/Utilities.h"/>
       </GROUP>
       <GROUP id="{0009C3F0-8120-7949-3FFD-6710367E3C60}" name="Resources">
         <FILE id="MGN2Fd" name="closeicon.svg" compile="0" resource="1" file="Source/Resources/closeicon.svg"/>
@@ -80,11 +95,13 @@
         <MODULEPATH id="juce_gui_basics" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../../JUCE/modules"/>
         <MODULEPATH id="leaf" path="../../LEAF"/>
+        <MODULEPATH id="sound_meter" path="Source"/>
       </MODULEPATHS>
     </VS2019>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="o0yFfN" bigIcon="o0yFfN"
+               appSandboxOptions="com.apple.security.device.usb,com.apple.security.files.user-selected.read-only,com.apple.security.files.user-selected.read-write">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="Electrosteel"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="Electrosteel" recommendedWarnings="LLVM"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="Electrosteel" optimisation="6"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
@@ -101,6 +118,7 @@
         <MODULEPATH id="juce_gui_basics" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../../JUCE/modules"/>
         <MODULEPATH id="leaf" path="../../LEAF"/>
+        <MODULEPATH id="sound_meter" path="Source"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
@@ -119,6 +137,7 @@
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="leaf" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="sound_meter" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
   <LIVE_SETTINGS>
     <OSX/>
