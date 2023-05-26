@@ -57,7 +57,7 @@ public:
     
     
 private:
-    
+    LookAndFeel_V4 laf;
     // Updating things that don't have attachments to the vts
     void updateMPEToggle(bool state);
     void updateStringChannel(int string, int ch);
@@ -162,7 +162,7 @@ private:
     
     Font euphemia;
     FileChooser chooser;
-    ElectroLookAndFeel laf;
+    //ElectroLookAndFeel laf;
     OwnedArray<MappingSource> allSources;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ElectroAudioProcessorEditor)
 };

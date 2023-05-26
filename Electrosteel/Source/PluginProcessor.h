@@ -43,7 +43,7 @@ public:
 #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
 #endif
-    
+    inline void setOpenString(float val, int i){};
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
  
     //==============================================================================
@@ -92,7 +92,7 @@ public:
     //==============================================================================
     void sendCopedentMidiMessage();
     void sendPresetMidiMessage();
-    void sendTuningMidiMessage();
+    void sendTuningMidiMessage(String name, int number);
     //==============================================================================
     void addMappingSource(MappingSourceModel* source);
     void addMappingTarget(MappingTargetModel* source);
@@ -141,16 +141,16 @@ public:
     OwnedArray<MappingSourceModel> ccSources;
     std::unique_ptr<SmoothedParameter> seriesParallelParam;
     
-    float* midiKeyValues[MAX_NUM_UNIQUE_SKEWS];
+    float* midiKeyValues;
     std::unique_ptr<MappingSourceModel> midiKeySource;
     int midiKeyMin = 21; // Default to A0
     int midiKeyMax = 108; // Default to C8
 
-	float* velocityValues[MAX_NUM_UNIQUE_SKEWS];
+    float* velocityValues;
 	float lastVelocityValue = 0.f;
 	std::unique_ptr<MappingSourceModel> velocitySource;
     
-    float* randomValues[MAX_NUM_UNIQUE_SKEWS];
+    float* randomValues;
     float lastRandomValue = 0.f;
     std::unique_ptr<MappingSourceModel> randomSource;
 
@@ -273,7 +273,8 @@ private:
     AudioProcessorValueTreeState vts;
     
     char dummy_memory[1];
-    
+    String tuningName;
+    int tuningNumber;
     int currentTuning;
     int keyCenter = 0;
     

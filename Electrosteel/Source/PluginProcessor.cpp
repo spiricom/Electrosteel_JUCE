@@ -35,6 +35,7 @@ AudioProcessorValueTreeState::ParameterLayout ElectroAudioProcessor::createParam
     for (int i = 0; i < NUM_MACROS; ++i)
     {
         n = i < NUM_GENERIC_MACROS ? "M" + String(i + 1) : cUniqueMacroNames[i - NUM_GENERIC_MACROS];
+        DBG(n);
         normRange = NormalisableRange<float>(0., 1.);
         layout.add (std::make_unique<AudioParameterFloat> (ParameterID { n,  1 }, n, normRange,
                                                            i == NUM_MACROS-1 ? 1.f : 0.f));
@@ -332,12 +333,6 @@ AudioProcessorValueTreeState::ParameterLayout ElectroAudioProcessor::createParam
         DBG(paramIds[i] + ": " + String(i));
     }
     
-    numInvParameterSkews = invParameterSkews.size();
-    for (int i = 0; i < numInvParameterSkews; ++i)
-    {
-        quickInvParameterSkews[i] = invParameterSkews[i];
-    }
-    
     return layout;
 }
 
@@ -436,11 +431,6 @@ prompt("","",AlertWindow::AlertIconType::NoIcon)
         
         ccParams.add(new SmoothedParameter(*this, vts, n));
         ccSources.add(new MappingSourceModel(*this, n, false, false, c));
-        for (int j = 0; j < invParameterSkews.size(); ++j)
-        {
-            float** source = ccParams.getLast()->getValuePointerArray(j);
-            ccSources.getLast()->sources[j] = source;
-        }
         sourceIds.add(n);
     }
     for (int i = 1; i <= 127; ++i) ccNumberToMacroMap.set(i, -1);
@@ -458,17 +448,15 @@ prompt("","",AlertWindow::AlertIconType::NoIcon)
 	randomSource = std::make_unique<MappingSourceModel>(*this, "Random on Attack",
                                                         true, false, Colours::white);
     sourceIds.add("Random on Attack");
-    for (int i = 0; i < numInvParameterSkews; ++i)
-    {
-        midiKeyValues[i] = (float*)leaf_alloc(&leaf, sizeof(float) * MAX_NUM_VOICES);
-        midiKeySource->sources[i] = &midiKeyValues[i];
+    //midiKeyValues = (float*)leaf_alloc(&leaf, sizeof(float) * MAX_NUM_VOICES);
+    midiKeyValues = midiKeySource->getValuePointerArray();
 
-		velocityValues[i] = (float*)leaf_alloc(&leaf, sizeof(float) * MAX_NUM_VOICES);
-		velocitySource->sources[i] = &velocityValues[i];
+    //velocityValues = (float*)leaf_alloc(&leaf, sizeof(float) * MAX_NUM_VOICES);
+    velocityValues = velocitySource->getValuePointerArray();
 
-		randomValues[i] = (float*)leaf_alloc(&leaf, sizeof(float) * MAX_NUM_VOICES);
-		randomSource->sources[i] = &randomValues[i];
-    }
+    //randomValues //= (float*)leaf_alloc(&leaf, sizeof(float) * MAX_NUM_VOICES);
+    randomValues = randomSource->getValuePointerArray();
+    //randomSource->source = randomValues;
     
     for (int i = 0; i < NUM_ENVS; ++i)
     {
@@ -566,14 +554,18 @@ ElectroAudioProcessor::~ElectroAudioProcessor()
         tSimplePoly_free(&strings[i]);
     }
     
-    for (int i = 0; i < numInvParameterSkews; ++i)
-    {
-        leaf_free(&leaf, (char*)midiKeyValues[i]);
-        leaf_free(&leaf, (char*)velocityValues[i]);
-        leaf_free(&leaf, (char*)randomValues[i]);
-    }
-    
+
+//    leaf_free(&leaf, (char*)midiKeyValues);
+//    leaf_free(&leaf, (char*)velocityValues);
+//    leaf_free(&leaf, (char*)randomValues);
+
+    DBG("Pre clear: " + String(leaf.allocCount) + " " + String(leaf.freeCount));
+//    for (auto p : params)
+//    {
+//        DBG(p->getName());
+//    }
     params.clearQuick(false);
+    DBG("Pre delete: " + String(leaf.allocCount) + " " + String(leaf.freeCount));
     if (chooser != nullptr)
         delete chooser;
 }
@@ -601,10 +593,7 @@ void ElectroAudioProcessor::addToKnobsToSmoothArray(SmoothedParameter* param)
 //    {
 //        ;
 //    }
-    for (auto knob : knobsToSmooth)
-    {
-        DBG("knob being msooth " + String(knob->getName()));
-    }
+    
 }
 //==============================================================================
 void ElectroAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
@@ -1195,7 +1184,7 @@ void ElectroAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
 
         for (int i = 0; i < ccParams.size(); ++i)
         {
-            ccParams[i]->tickSkewsNoHooks();
+            ccParams[i]->tickNoHooks();
         }
 //        float pitchBends[8];
 //        for (int i = 0; i < 8; i++)
@@ -1409,18 +1398,12 @@ void ElectroAudioProcessor::noteOn(int channel, int key, float velocity)
             velocity = velocity * velocity;
             key -= midiKeyMin;
             float norm = key / float(midiKeyMax - midiKeyMin);
-            midiKeyValues[0][i] = jlimit(0.f, 1.f, norm);
-            velocityValues[0][i] = velocity;
+            midiKeyValues[i] = jlimit(0.f, 1.f, norm);
+            velocityValues[i] = velocity;
             float r = leaf.random();
-            randomValues[0][i] = r;
+            randomValues[i] = r;
             lastRandomValue = r;
-            for (int s = 1; s < numInvParameterSkews; ++s)
-            {
-                float invSkew = quickInvParameterSkews[s];
-                midiKeyValues[s][i] = powf(norm, invSkew);
-                velocityValues[s][i] = powf(velocity, invSkew);
-                randomValues[s][i] = powf(r, invSkew);
-            }
+           
             for (auto e : envs) e->noteOn(i, velocity);
             for (auto o : lfos) o->noteOn(i, velocity);
         }
@@ -1488,17 +1471,17 @@ void ElectroAudioProcessor::ctrlInput(int channel, int ctrl, int value)
             v = value * INV_127;
             vts.getParameter("M" + String(m+1))->setValueNotifyingHost(v);
         }
-        else if (NUM_GENERIC_MACROS <= m && m < PEDAL_MACRO_ID)
+        else if (NUM_GENERIC_MACROS <= m && m <= PEDAL_MACRO_ID)
         {
             v = value * INV_127;
             vts.getParameter(cUniqueMacroNames[m-NUM_GENERIC_MACROS])
             ->setValueNotifyingHost(v);
         }
-        else if (m == PEDAL_MACRO_ID)
-        {
-            v = value * INV_127;
-            vts.getParameter("Ped")->setValueNotifyingHost(v);
-        }
+//        else if (m == PEDAL_MACRO_ID)
+//        {
+//            v = value * INV_127;
+//            vts.getParameter("Ped")->setValueNotifyingHost(v);
+//        }
     }
 }
 
@@ -1564,8 +1547,10 @@ void ElectroAudioProcessor::sendPresetMidiMessage()
     waitingToSendPreset = true;
 }
 
-void ElectroAudioProcessor::sendTuningMidiMessage()
+void ElectroAudioProcessor::sendTuningMidiMessage(String name, int number)
 {
+    tuningName = name;
+    tuningNumber = number;
     waitingToSendTuning = true;
 }
 
@@ -1739,7 +1724,7 @@ void ElectroAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     root.setProperty("numVoices", numVoicesActive, nullptr);
     root.setProperty("midiKeyMin", midiKeyMin, nullptr);
     root.setProperty("midiKeyMax", midiKeyMax, nullptr);
-    
+    root.setProperty("numVoices", numVoicesActive, nullptr);
     for (int i = 0; i < NUM_MIDI_NOTES; ++i)
     {
         root.setProperty("CentsDev" + String(i+1), centsDeviation[i], nullptr);
@@ -1824,7 +1809,7 @@ void ElectroAudioProcessor::setStateInformation (const void* data, int sizeInByt
         String presetPath = xml->getStringAttribute("path");
         editorScale = xml->getDoubleAttribute("editorScale", 1.05);
         setMPEMode(xml->getBoolAttribute("mpeMode", false)); //EB
-        //setNumVoicesActive(xml->getIntAttribute("numVoices", 1));//EBSPECIFIC
+        setNumVoicesActive(xml->getIntAttribute("numVoices", 1));//EBSPECIFIC
         midiKeyMin = xml->getIntAttribute("midiKeyMin", 21);
         midiKeyMax = xml->getIntAttribute("midiKeyMax", 108);
         for (int i = 0; i < NUM_MIDI_NOTES; ++i)
@@ -1880,7 +1865,26 @@ void ElectroAudioProcessor::setStateInformation (const void* data, int sizeInByt
         // Audio processor value tree state
         if (XmlElement* state = xml->getChildByName(vts.state.getType()))
             vts.replaceState (juce::ValueTree::fromXml (*state));
-        
+        for (int v = 0; v < numVoicesActive; v++)
+        {
+            for (int i = 0; i < NUM_OSCS; i++)
+            {
+                oscs[i]->loadAll(v);
+            }
+            for (int i = 0; i < NUM_ENVS; i++)
+            {
+                envs[i]->loadAll(v);
+            }
+            noise->loadAll(v);
+            for (int i = 0; i < NUM_FILT; i++)
+            {
+                filt[i]->loadAll(v);
+            }
+            for (int i = 0; i < NUM_LFOS; i++)
+            {
+                lfos[i]->loadAll(v);
+            }
+        }
         // Copedent
         if (XmlElement* copedent = xml->getChildByName("Copedent"))
         {

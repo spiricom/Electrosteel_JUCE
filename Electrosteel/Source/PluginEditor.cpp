@@ -29,6 +29,8 @@ resizer(new ResizableCornerComponent (this, constrain.get())),
 chooser("Select a .wav file to load...", {}, "*.wav")
 
 {
+    LookAndFeel::setDefaultLookAndFeel(ElectroLookAndFeel::getInstance());
+    tabs.getTabbedButtonBar().setLookAndFeel(&laf);
     meters.setChannelFormat(juce::AudioChannelSet::stereo());
     
     tab1.addAndMakeVisible (meters);
@@ -107,14 +109,14 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     midiKeyRangeSlider.addListener(this);
     midiKeyComponent.addAndMakeVisible(midiKeyRangeSlider);
     
-    midiKeyMinLabel.setLookAndFeel(&laf);
+    //midiKeyMinLabel.setLookAndFeel(&laf);
     midiKeyMinLabel.setEditable(true);
     midiKeyMinLabel.setJustificationType(Justification::centred);
     midiKeyMinLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
     midiKeyMinLabel.addListener(this);
     midiKeyComponent.addAndMakeVisible(midiKeyMinLabel);
     
-    midiKeyMaxLabel.setLookAndFeel(&laf);
+   // midiKeyMaxLabel.setLookAndFeel(&laf);
     midiKeyMaxLabel.setEditable(true);
     midiKeyMaxLabel.setJustificationType(Justification::centred);
     midiKeyMaxLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
@@ -137,7 +139,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
                                                    "Random on Attack");
     randomComponent.addAndMakeVisible(randomSource.get());
     
-    randomValueLabel.setLookAndFeel(&laf);
+   // randomValueLabel.setLookAndFeel(&laf);
     randomValueLabel.setEditable(false);
     randomValueLabel.setJustificationType(Justification::centred);
     randomValueLabel.setColour(Label::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
@@ -149,7 +151,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     
     numVoicesLabel.setText("Voices", dontSendNotification);
     numVoicesLabel.setJustificationType(Justification::centred);
-    numVoicesLabel.setLookAndFeel(&laf);
+   // numVoicesLabel.setLookAndFeel(&laf);
     tab1.addAndMakeVisible(numVoicesLabel);
     
     numVoicesSlider.setRange(1., (float)MAX_NUM_VOICES, 1.); //EBSPECIFIC
@@ -157,7 +159,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     numVoicesSlider.setSliderSnapsToMousePosition(false);
     numVoicesSlider.setMouseDragSensitivity(200);
     numVoicesSlider.setTextValueSuffix(""); //EBSPECIFIC
-    numVoicesSlider.setLookAndFeel(&laf);
+    //numVoicesSlider.setLookAndFeel(&laf);
     numVoicesSlider.setColour(Slider::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
     numVoicesSlider.setColour(Slider::textBoxOutlineColourId, Colours::transparentBlack);
     numVoicesSlider.setColour(Slider::textBoxTextColourId, Colours::gold.withBrightness(0.95f));
@@ -166,13 +168,13 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     
     transposeLabel.setText("Transpose", dontSendNotification);
     transposeLabel.setJustificationType(Justification::centred);
-    transposeLabel.setLookAndFeel(&laf);
+    //transposeLabel.setLookAndFeel(&laf);
     tab1.addAndMakeVisible(transposeLabel);
     
     transposeSlider.setSliderStyle(Slider::SliderStyle::LinearBarVertical);
     transposeSlider.setSliderSnapsToMousePosition(false);
     transposeSlider.setMouseDragSensitivity(400);
-    transposeSlider.setLookAndFeel(&laf);
+   // transposeSlider.setLookAndFeel(&laf);
     transposeSlider.setColour(Slider::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
     transposeSlider.setColour(Slider::textBoxOutlineColourId, Colours::transparentBlack);
     transposeSlider.setColour(Slider::textBoxTextColourId, Colours::gold.withBrightness(0.95f));
@@ -184,7 +186,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
         String n = "Str" + String(i);
         if (i == 0) n = "PB+CCs";
         stringActivityButtons.add(new TextButton(n));
-        stringActivityButtons[i]->setLookAndFeel(&laf);
+        //stringActivityButtons[i]->setLookAndFeel(&laf);
         stringActivityButtons[i]->setConnectedEdges(Button::ConnectedOnLeft &
                                                      Button::ConnectedOnRight);
         stringActivityButtons[i]->setInterceptsMouseClicks(false, false);
@@ -195,7 +197,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
             pitchBendSliders.add(new Slider());
             pitchBendSliders[i]->setSliderStyle(Slider::SliderStyle::LinearBar);
             pitchBendSliders[i]->setInterceptsMouseClicks(false, false);
-            pitchBendSliders[i]->setLookAndFeel(&laf);
+            //pitchBendSliders[i]->setLookAndFeel(&laf);
             pitchBendSliders[i]->setColour(Slider::trackColourId, Colours::lightgrey);
             pitchBendSliders[i]->setColour(Slider::backgroundColourId, Colours::black);
             pitchBendSliders[i]->setColour(Slider::textBoxOutlineColourId, Colours::grey);
@@ -210,7 +212,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     
     rangeSlider.setSliderStyle(Slider::SliderStyle::LinearBar);
     rangeSlider.setInterceptsMouseClicks(true, true);
-    rangeSlider.setLookAndFeel(&laf);
+  //  rangeSlider.setLookAndFeel(&laf);
     rangeSlider.setColour(Slider::trackColourId, Colours::lightgrey);
     rangeSlider.setColour(Slider::backgroundColourId, Colours::black);
     rangeSlider.setColour(Slider::textBoxOutlineColourId, Colours::grey);
@@ -221,7 +223,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     sliderAttachments.add(new SliderAttachment(vts, "PitchBendRange",
                                                rangeSlider));
     rangeLabel.setText("RANGE", dontSendNotification);
-    rangeLabel.setLookAndFeel(&laf);
+    //rangeLabel.setLookAndFeel(&laf);
     rangeLabel.setJustificationType(Justification::centredRight);
     tab1.addAndMakeVisible(rangeLabel);
    
@@ -264,18 +266,18 @@ chooser("Select a .wav file to load...", {}, "*.wav")
                                                seriesParallelSlider));
     
     seriesLabel.setText("Ser.", dontSendNotification);
-    seriesLabel.setLookAndFeel(&laf);
+    //seriesLabel.setLookAndFeel(&laf);
     seriesParallelComponent.addAndMakeVisible(seriesLabel);
     
     parallelLabel.setText("Par.", dontSendNotification);
     parallelLabel.setJustificationType(Justification::centredRight);
-    parallelLabel.setLookAndFeel(&laf);
+    //parallelLabel.setLookAndFeel(&laf);
     seriesParallelComponent.addAndMakeVisible(parallelLabel);
     
     outputModule = std::make_unique<OutputModule>(*this, vts, *processor.output);
     tab1.addAndMakeVisible(outputModule.get());
     
-    envsAndLFOs.setLookAndFeel(&laf);
+    //envsAndLFOs.setLookAndFeel(&laf);
     for (int i = 0; i < NUM_ENVS; ++i)
     {
         String paramName = "Envelope" + String(i+1);
@@ -326,12 +328,12 @@ chooser("Select a .wav file to load...", {}, "*.wav")
             if (i >= NUM_GENERIC_MACROS) n = cUniqueMacroNames[i-NUM_GENERIC_MACROS];
             macroControlLabels.add(new Label());
             macroControlLabels.getLast()->setText(n + " CC#", dontSendNotification);
-            macroControlLabels.getLast()->setLookAndFeel(&laf);
+            //macroControlLabels.getLast()->setLookAndFeel(&laf);
             tab2.addAndMakeVisible(macroControlLabels.getLast());
         }
         
         macroControlEntries.add(new Label());
-        macroControlEntries.getLast()->setLookAndFeel(&laf);
+        //macroControlEntries.getLast()->setLookAndFeel(&laf);
         macroControlEntries.getLast()->setEditable(true);
         macroControlEntries.getLast()->setJustificationType(Justification::centred);
         macroControlEntries.getLast()->setColour(Label::backgroundColourId,
@@ -343,11 +345,11 @@ chooser("Select a .wav file to load...", {}, "*.wav")
         {
             macroControlNameLabels.add(new Label());
             macroControlNameLabels.getLast()->setText("Name", dontSendNotification);
-            macroControlNameLabels.getLast()->setLookAndFeel(&laf);
+            //macroControlNameLabels.getLast()->setLookAndFeel(&laf);
             tab2.addAndMakeVisible(macroControlNameLabels.getLast());
             
             macroControlNames.add(new Label());
-            macroControlNames.getLast()->setLookAndFeel(&laf);
+           // macroControlNames.getLast()->setLookAndFeel(&laf);
             macroControlNames.getLast()->setEditable(true);
             //macroControlNames.getLast()->setInputRestrictions(8);
             macroControlNames.getLast()->setJustificationType(Justification::centred);
@@ -367,11 +369,11 @@ chooser("Select a .wav file to load...", {}, "*.wav")
         stringChannelLabels.add(new Label());
         stringChannelLabels.getLast()->setText(n + " Ch#", dontSendNotification);
 //        stringChannelLabels.getLast()->setJustificationType(Justification::centredRight);
-        stringChannelLabels.getLast()->setLookAndFeel(&laf);
+        //stringChannelLabels.getLast()->setLookAndFeel(&laf);
         tab2.addAndMakeVisible(stringChannelLabels.getLast());
         
         stringChannelEntries.add(new Label());
-        stringChannelEntries.getLast()->setLookAndFeel(&laf);
+        //stringChannelEntries.getLast()->setLookAndFeel(&laf);
         stringChannelEntries.getLast()->setEditable(true);
         stringChannelEntries.getLast()->setJustificationType(Justification::centred);
         stringChannelEntries.getLast()->setColour(Label::backgroundColourId,
@@ -430,7 +432,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     setSize(EDITOR_WIDTH * processor.editorScale, EDITOR_HEIGHT * processor.editorScale);
     
     sendOutButton.setButtonText("Send preset via MIDI");
-    sendOutButton.setLookAndFeel(&laf);
+    //sendOutButton.setLookAndFeel(&laf);
     sendOutButton.onClick = [this] { processor.sendPresetMidiMessage(); };
     
     
@@ -443,13 +445,13 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     presetNumber.setRange(0, 99, 1);
     presetNumber.onValueChange = [this] {processor.setPresetNumber(presetNumber.getValue());};
     presetNumber.setSliderStyle(Slider::SliderStyle::LinearBarVertical);
-    presetNumberlabel.setLookAndFeel(&laf);
-    presetNamelabel.setLookAndFeel(&laf);
+   // presetNumberlabel.setLookAndFeel(&laf);
+   // presetNamelabel.setLookAndFeel(&laf);
     presetNumber.setMouseDragSensitivity(200);
     presetNumber.setTextValueSuffix(""); //EBSPECIFIC
     presetNumber.setTitle("Preset Number");
     presetNumber.setName("Preset Number");
-    presetNumber.setLookAndFeel(&laf);
+    //presetNumber.setLookAndFeel(&laf);
     presetNumber.setColour(Slider::backgroundColourId, Colours::darkgrey.withBrightness(0.2f));
     presetNumber.setColour(Slider::textBoxOutlineColourId, Colours::transparentBlack);
     presetNumber.setColour(Slider::textBoxTextColourId, Colours::gold.withBrightness(0.95f));
@@ -608,13 +610,18 @@ void ElectroAudioProcessorEditor::resized()
     }
     
     uniqueMacroComponent.setBounds(6*s + (knobSize+2)*NUM_GENERIC_MACROS + 3,
-                                   outputModule->getBottom()-1, 300, 69);
+                                   outputModule->getBottom()-1, 700, 69);
     
     for (int i = NUM_GENERIC_MACROS; i < NUM_MACROS; ++i)
     {
-        macroDials[i]->setBounds(11*s + (knobSize+2)*(i-NUM_GENERIC_MACROS) - 3,
+        macroDials[i]->setBounds(6*s + (knobSize *.92f)*(i-NUM_GENERIC_MACROS) - 3,
                                  523*s - uniqueMacroComponent.getY(),
-                                 knobSize, knobSize*1.8f);
+                                 knobSize*.9f,
+                                 knobSize*1.8f);
+//        6*s + (knobSize+2)*i,
+//        523*s,
+//        knobSize,
+//        knobSize*1.8f
     }
     
     int align = 78*s;
@@ -660,10 +667,10 @@ void ElectroAudioProcessorEditor::resized()
     //    keyboard.setBoundsRelative(0.f, 0.86f, 1.0f, 0.14f);
     //    keyboard.setKeyWidth(width / 52.0f);
     
-    OSCILLOSCOPE.setBoundsRelative(0.65,0.87,0.35, 0.13 );
+    OSCILLOSCOPE.setBoundsRelative(0.85,0.87,0.15, 0.13 );
     //OSCILLOSCOPE.get
     //meters.setBounds(540*s-1, outputModule->getBottom()-1, 360*s+2, 114*s);
-    setVerticalRotatedWithBounds(meters, true, Rectangle<int>(540*s+100, outputModule->getBottom()-1, 300*s+2, 60*s));
+    setVerticalRotatedWithBounds(meters, true, Rectangle<int>(540*s+ 45, macroDials.getFirst()->getBottom() - 10, 190*s+2, 50*s));
     //==============================================================================
     // TAB2 ========================================================================
     
@@ -1007,6 +1014,27 @@ void ElectroAudioProcessorEditor::updateNumVoicesSlider(int numVoices)
     for (int i = 0; i < MAX_NUM_VOICES; ++i)
     {
         stringActivityButtons[i+1]->setAlpha(i+1 > processor.numVoicesActive ? 0.5f : 1.f);
+    }
+    for (int i = 0; i < MAX_NUM_VOICES; ++i)
+    {
+        stringActivityButtons[i+1]->setAlpha(i+1 > processor.numVoicesActive ? 0.5f : 1.f);
+    }
+    for (int i = 0; i < NUM_OSCS; i++)
+    {
+        processor.oscs[i]->loadAll(numVoices-1);
+    }
+    for (int i = 0; i < NUM_ENVS; i++)
+    {
+        processor.envs[i]->loadAll(numVoices-1);
+    }
+    processor.noise->loadAll(numVoices-1);
+    for (int i = 0; i < NUM_FILT; i++)
+    {
+        processor.filt[i]->loadAll(numVoices-1);
+    }
+    for (int i = 0; i < NUM_LFOS; i++)
+    {
+        processor.lfos[i]->loadAll(numVoices-1);
     }
     
 }

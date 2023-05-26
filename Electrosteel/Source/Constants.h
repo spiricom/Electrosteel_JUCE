@@ -16,7 +16,7 @@
 #define EDITOR_HEIGHT 700.0f
 #define NUM_GENERIC_MACROS 8
 #define NUM_MIDI_NOTES 128
-#define NUM_UNIQUE_MACROS 5
+#define NUM_UNIQUE_MACROS 15
 #define NUM_MACROS (NUM_GENERIC_MACROS + NUM_UNIQUE_MACROS)
 #define PEDAL_MACRO_ID (NUM_MACROS-1)
 
@@ -66,7 +66,17 @@ static const std::vector<std::string> cUniqueMacroNames = {
     "B",
     "X",
     "Y",
-    "Ped"
+    "Ped",
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "cLKL",
+    "cLKV",
+    "cLKR",
+    "cRKL",
+    "cRKR",
 };
 
 //==============================================================================
