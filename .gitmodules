@@ -1,4 +1,4 @@
-[submodule "Electrosteel/Electrosteel/Source/Electro_backend"]
-	path = Electrosteel/Electrosteel/Source/Electro_backend
+[submodule "Electrosteel/Source/Electro_backend"]
+	path = Electrosteel/Source/Electro_backend
 	url = git@github.com:davispolito/Electro_backend.git
 	branch = develop
