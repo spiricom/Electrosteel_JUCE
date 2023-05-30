@@ -407,7 +407,7 @@ chooser("Select a .wav file to load...", {}, "*.wav")
     // TAB5 ========================================================================
     addAndMakeVisible(tab5);
     copedentTable.setBoundsRelative(0.02f, 0.04f, 0.52f, 0.59f);
-    mpeToggle.setBoundsRelative(0.02f, 0.6f, 0.2f, 0.2f);
+    mpeToggle.setBoundsRelative(0.02f, 0.63f, 0.2f, 0.1f);
     mpeToggle.setButtonText("MPE mode");
     tab5.addAndMakeVisible(copedentTable);
     mpeToggle.addListener(this);
